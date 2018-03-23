@@ -1,0 +1,40 @@
+version: "3"
+services:
+  fluentd:
+    image: 127.0.0.1:5000/mpuarch/fluentd
+    # build: ./fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    links:
+      - "redis"
+    networks:
+      - "my-net"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+
+  redis:
+    image: redis
+    restart: always
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - my-net
+
+volumes:
+  report-data:
+
+networks:
+  my-net:
+    driver: "overlay"
